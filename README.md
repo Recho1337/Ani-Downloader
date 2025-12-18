@@ -1,6 +1,6 @@
 # 🎬 AnimeKai Episode Downloader & Merger
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/USERNAME/REPOSITORY/blob/main/NOTEBOOK_NAME.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Cinichi/Ani-Downloader/blob/main/anime_downloader.ipynb)
 
 ☁️ **Click the badge above to open this project directly in Google Colab (no setup required!)**
 
