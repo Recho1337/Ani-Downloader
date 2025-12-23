@@ -33,7 +33,7 @@ A powerful web-based anime downloader with a clean Flask interface for downloadi
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/Recho1337/Ani-Downloader.git
 cd Ani-Downloader
 
 # Start with Docker Compose
@@ -47,7 +47,7 @@ docker-compose up -d
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/Recho1337/Ani-Downloader.git
 cd Ani-Downloader
 
 # Install Python dependencies
