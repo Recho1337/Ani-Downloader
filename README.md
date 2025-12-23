@@ -2,7 +2,7 @@
 
 A powerful web-based anime downloader with a clean Flask interface for downloading anime episodes from anikai.to. Features automatic search, episode management, and a built-in library to organize your downloads.
 
-> **Note**: This project is based on [Cinichi/Ani-Downloader](https://github.com/Cinichi/Ani-Downloader) with enhancements and a web interface.
+> **Note**: This project is based on [Cinichi/Ani-Downloader](https://github.com/Cinichi/Ani-Downloader)
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.11-blue.svg)
