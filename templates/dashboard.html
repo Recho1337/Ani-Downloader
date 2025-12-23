@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AnimeKai Downloader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% include 'nav.html' %}
+
+    <div class="container">
+        <div class="page-header">
+            <h1>📊 Dashboard</h1>
+            <p class="subtitle">Overview of your anime library</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📁</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="totalAnime">0</div>
+                    <div class="stat-label">Anime Series</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">🎬</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="totalEpisodes">0</div>
+                    <div class="stat-label">Total Episodes</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">💾</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="totalSize">0 GB</div>
+                    <div class="stat-label">Total Size</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">📥</div>
+                <div class="stat-content">
+                    <div class="stat-value" id="activeDownloads">0</div>
+                    <div class="stat-label">Active Downloads</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">📥 Active Downloads</h2>
+            <div id="activeDownloadsList">
+                <div class="empty-state">No active downloads</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 30px;">
+            <h2 class="card-title">📚 Recent Downloads</h2>
+            <div id="recentList">
+                <div class="empty-state">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,18 @@
+services:
+  anime-downloader:
+    build: .
+    container_name: animekai-downloader
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./downloads:/app/downloads
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    networks:
+      - anime-network
+
+networks:
+  anime-network:
+    driver: bridge

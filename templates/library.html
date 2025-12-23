@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library - AnimeKai Downloader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% include 'nav.html' %}
+
+    <div class="container">
+        <div class="page-header">
+            <h1>📚 Library</h1>
+            <p class="subtitle">Your anime collection</p>
+        </div>
+
+        <div id="anime-list" class="anime-list">
+            <div class="loading">Loading library...</div>
+        </div>
+    </div>
+
+    <script>
+        async function loadLibrary() {
+            try {
+                const response = await fetch('/api/library/list');
+                const library = await response.json();
+                
+                const container = document.getElementById('anime-list');
+                
+                if (!library || library.length === 0) {
+                    container.innerHTML = '<div class="empty-state">📭 No anime downloaded yet</div>';
+                    return;
+                }
+                
+                container.innerHTML = library.map(anime => `
+                    <a href="/library/${encodeURIComponent(anime.name)}" class="anime-card">
+                        <div class="anime-card-header">
+                            <h3>${anime.name}</h3>
+                        </div>
+                        <div class="anime-card-body">
+                            <div class="stat">
+                                <span class="stat-label">Episodes:</span>
+                                <span class="stat-value">${anime.total_files}</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-label">Size:</span>
+                                <span class="stat-value">${anime.total_size_mb.toFixed(2)} MB</span>
+                            </div>
+                        </div>
+                    </a>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading library:', error);
+                document.getElementById('anime-list').innerHTML = 
+                    '<div class="error">Failed to load library</div>';
+            }
+        }
+        
+        loadLibrary();
+        setInterval(loadLibrary, 30000);
+    </script>
+</body>
+</html>

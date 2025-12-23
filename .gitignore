@@ -1,0 +1,5 @@
+__pycache__
+app/__pycache__
+venv
+docs/docker-compose.main.yml
+downloads

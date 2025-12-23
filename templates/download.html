@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download - AnimeKai Downloader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --bg-color: #0f172a;
+            --surface-color: #1e293b;
+            --surface-light: #334155;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: var(--surface-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .card {
+            background: var(--surface-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            background: var(--surface-light);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--surface-light);
+            color: var(--text-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--surface-light);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+            transition: width 0.3s ease;
+        }
+
+        .job-item {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .job-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .job-meta {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-initializing,
+        .status-fetching_info,
+        .status-fetching_episodes {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        .status-downloading,
+        .status-merging {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .status-completed {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .status-failed {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .log-container {
+            background: #000;
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            margin-top: 12px;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .log-time {
+            color: var(--text-muted);
+        }
+
+        .log-level-INFO {
+            color: #60a5fa;
+        }
+
+        .log-level-ERROR {
+            color: var(--error-color);
+        }
+
+        .log-level-WARN {
+            color: var(--warning-color);
+        }
+
+        .log-message {
+            flex: 1;
+        }
+
+        .files-list {
+            margin-top: 12px;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: var(--surface-light);
+            border-radius: 6px;
+            margin-bottom: 6px;
+        }
+
+        .file-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-download {
+            background: var(--success-color);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .btn-download:hover {
+            background: #059669;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            border: 3px solid var(--surface-light);
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .alert-info {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid var(--primary-color);
+            color: var(--text-color);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error-color);
+            color: var(--text-color);
+        }
+
+        .collapsible-header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .collapsible-content.open {
+            max-height: 1000px;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s;
+        }
+
+        .toggle-icon.open {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    {% include 'nav.html' %}
+
+    <div class="container">
+        <div class="page-header">
+            <h1>📥 Download Anime</h1>
+            <p class="subtitle">Download episodes from AnimeKai</p>
+        </div>
+        <!-- Download Form -->
+        <div class="card">
+            <h2 class="card-title">📥 New Download</h2>
+
+            <form id="downloadForm">
+                <div class="form-group">
+                    <label for="animeUrl">Anime URL</label>
+                    <input type="text" id="animeUrl" placeholder="https://animekai.to/watch/..." required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="downloadMode">Download Mode</label>
+                        <select id="downloadMode">
+                            <option value="All Episodes">All Episodes</option>
+                            <option value="Episode Range">Episode Range</option>
+                            <option value="Single Episode">Single Episode</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="singleEpisodeGroup" style="display: none;">
+                        <label for="singleEpisode">Episode Number</label>
+                        <input type="text" id="singleEpisode" placeholder="1" value="1">
+                    </div>
+                </div>
+
+                <div id="rangeGroup" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="startEpisode">Start Episode</label>
+                            <input type="text" id="startEpisode" placeholder="1" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="endEpisode">End Episode</label>
+                            <input type="text" id="endEpisode" placeholder="12" value="12">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="preferType">Subtitle Type</label>
+                        <select id="preferType">
+                            <option value="Soft Sub">Soft Sub</option>
+                            <option value="Hard Sub">Hard Sub</option>
+                            <option value="Dub (with subs)">Dub (with subs)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="preferServer">Server</label>
+                        <select id="preferServer">
+                            <option value="Server 1">Server 1</option>
+                            <option value="Server 2">Server 2</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="collapsible-header" onclick="toggleAdvanced()">
+                        <label>⚙️ Advanced Settings</label>
+                        <span class="toggle-icon" id="advancedToggle">▼</span>
+                    </div>
+                    <div class="collapsible-content" id="advancedSettings">
+                        <div class="form-row" style="margin-top: 16px;">
+                            <div class="form-group">
+                                <label for="downloadMethod">Download Method</label>
+                                <select id="downloadMethod">
+                                    <option value="yt-dlp">yt-dlp (Recommended)</option>
+                                    <option value="aria2">aria2</option>
+                                    <option value="ffmpeg">ffmpeg</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="seasonNumber">Season Number (0 = auto)</label>
+                                <input type="number" id="seasonNumber" value="0" min="0">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="mergeEpisodes">
+                                <label for="mergeEpisodes">Merge episodes into single file</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="keepIndividualFiles">
+                                <label for="keepIndividualFiles">Keep individual files after merging</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <span>🚀 Start Download</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Active Downloads -->
+        <div class="card">
+            <h2 class="card-title">📊 Download Queue</h2>
+            <div id="jobsList">
+                <div class="empty-state">
+                    No active downloads. Start a new download above!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentJobs = {};
+        let updateInterval = null;
+
+        // Check for URL parameter and pre-fill
+        const urlParams = new URLSearchParams(window.location.search);
+        const prefilledUrl = urlParams.get('url');
+        if (prefilledUrl) {
+            document.getElementById('animeUrl').value = prefilledUrl;
+        }
+
+        // Handle download mode change
+        document.getElementById('downloadMode').addEventListener('change', function() {
+            const mode = this.value;
+            const singleGroup = document.getElementById('singleEpisodeGroup');
+            const rangeGroup = document.getElementById('rangeGroup');
+            
+            singleGroup.style.display = mode === 'Single Episode' ? 'block' : 'none';
+            rangeGroup.style.display = mode === 'Episode Range' ? 'block' : 'none';
+        });
+
+        function toggleAdvanced() {
+            const content = document.getElementById('advancedSettings');
+            const icon = document.getElementById('advancedToggle');
+            content.classList.toggle('open');
+            icon.classList.toggle('open');
+        }
+
+        // Handle form submission
+        document.getElementById('downloadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner"></span> <span>Starting...</span>';
+
+            const formData = {
+                anime_url: document.getElementById('animeUrl').value,
+                download_mode: document.getElementById('downloadMode').value,
+                single_episode: document.getElementById('singleEpisode').value,
+                start_episode: document.getElementById('startEpisode').value,
+                end_episode: document.getElementById('endEpisode').value,
+                prefer_type: document.getElementById('preferType').value,
+                prefer_server: document.getElementById('preferServer').value,
+                download_method: document.getElementById('downloadMethod').value,
+                season_number: parseInt(document.getElementById('seasonNumber').value),
+                merge_episodes: document.getElementById('mergeEpisodes').checked,
+                keep_individual_files: document.getElementById('keepIndividualFiles').checked,
+            };
+
+            try {
+                const response = await fetch('/api/download/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('✅ Download started! Job ID: ' + data.job_id);
+                    startPolling();
+                } else {
+                    alert('❌ Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>🚀 Start Download</span>';
+            }
+        });
+
+        async function updateJobStatus() {
+            try {
+                const response = await fetch('/api/download/list');
+                const jobs = await response.json();
+
+                if (jobs.length === 0) {
+                    document.getElementById('jobsList').innerHTML = `
+                        <div class="empty-state">
+                            No active downloads. Start a new download above!
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                for (const job of jobs) {
+                    html += renderJob(job);
+                }
+
+                document.getElementById('jobsList').innerHTML = html;
+            } catch (error) {
+                console.error('Error updating job status:', error);
+            }
+        }
+
+        function renderJob(job) {
+            const statusClass = `status-${job.status}`;
+            const statusText = job.status.replace(/_/g, ' ').toUpperCase();
+            
+            let filesHtml = '';
+            if (job.merged_file) {
+                filesHtml = `
+                    <div class="files-list">
+                        <strong>📦 Merged File:</strong>
+                        <div class="file-item">
+                            <span class="file-name">${job.merged_file}</span>
+                            <a href="/api/download/file/${encodeURIComponent(job.merged_file)}" class="btn-download">⬇️ Download</a>
+                        </div>
+                    </div>
+                `;
+            } else if (job.downloaded_files && job.downloaded_files.length > 0) {
+                filesHtml = `
+                    <div class="files-list">
+                        <strong>📁 Downloaded Files (${job.downloaded_files.length}):</strong>
+                        ${job.downloaded_files.map(file => `
+                            <div class="file-item">
+                                <span class="file-name">${file}</span>
+                                <a href="/api/download/file/${encodeURIComponent(file)}" class="btn-download">⬇️ Download</a>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            let logsHtml = '';
+            if (job.logs && job.logs.length > 0) {
+                logsHtml = `
+                    <div class="log-container">
+                        ${job.logs.map(log => `
+                            <div class="log-entry">
+                                <span class="log-time">[${log.timestamp}]</span>
+                                <span class="log-level-${log.level}">[${log.level}]</span>
+                                <span class="log-message">${escapeHtml(log.message)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+
+            let errorHtml = '';
+            if (job.error) {
+                errorHtml = `
+                    <div class="alert alert-error">
+                        <strong>Error:</strong> ${escapeHtml(job.error)}
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="job-item">
+                    <div class="job-header">
+                        <div>
+                            <div class="job-title">${job.anime_title || 'Loading...'}</div>
+                            <div class="job-meta">
+                                Job #${job.job_id} • 
+                                ${job.current_episode ? `Episode ${job.current_episode} • ` : ''}
+                                ${job.completed_episodes}/${job.total_episodes || '?'} episodes
+                                ${job.elapsed_seconds ? ` • ${formatTime(job.elapsed_seconds)}` : ''}
+                            </div>
+                        </div>
+                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    </div>
+                    
+                    ${job.progress > 0 ? `
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${job.progress}%"></div>
+                        </div>
+                        <div style="text-align: right; font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                            ${job.progress}%
+                        </div>
+                    ` : ''}
+                    
+                    ${errorHtml}
+                    ${filesHtml}
+                    ${logsHtml}
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+            
+            if (h > 0) {
+                return `${h}h ${m}m ${s}s`;
+            } else if (m > 0) {
+                return `${m}m ${s}s`;
+            } else {
+                return `${s}s`;
+            }
+        }
+
+        function startPolling() {
+            if (!updateInterval) {
+                updateJobStatus();
+                updateInterval = setInterval(updateJobStatus, 2000);
+            }
+        }
+
+        function stopPolling() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+            }
+        }
+
+        // Start polling on page load
+        startPolling();
+
+        // Stop polling when page is not visible
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                stopPolling();
+            } else {
+                startPolling();
+            }
+        });
+    </script>
+</body>
+</html>

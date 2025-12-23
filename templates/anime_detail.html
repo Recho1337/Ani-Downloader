@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ anime_name }} - AnimeKai Downloader</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    {% include 'nav.html' %}
+    
+    <div class="container">
+        <div style="margin-bottom: 20px;">
+            <a href="/library" class="back-link">← Back to Library</a>
+        </div>
+        
+        <h1>🎬 {{ anime_name }}</h1>
+        <div id="anime-stats" class="subtitle"></div>
+        
+        <div id="episode-list" class="episode-list">
+            <div class="loading">Loading episodes...</div>
+        </div>
+    </div>
+
+    <script>
+        const animeName = "{{ anime_name }}";
+        
+        async function loadAnimeFiles() {
+            try {
+                const response = await fetch(`/api/library/anime/${encodeURIComponent(animeName)}`);
+                const data = await response.json();
+                
+                // Update stats
+                document.getElementById('anime-stats').innerHTML = 
+                    `${data.total_files} episodes • ${data.total_size_mb.toFixed(2)} MB total`;
+                
+                const container = document.getElementById('episode-list');
+                
+                if (!data.files || data.files.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No files found</div>';
+                    return;
+                }
+                
+                container.innerHTML = data.files.map(file => `
+                    <div class="episode-item">
+                        <div class="episode-info">
+                            <div class="episode-name">${file.name}</div>
+                            <div class="episode-meta">
+                                ${file.size_gb >= 1 ? 
+                                    `${file.size_gb.toFixed(2)} GB` : 
+                                    `${file.size_mb.toFixed(2)} MB`
+                                } • Modified: ${new Date(file.modified).toLocaleString()}
+                            </div>
+                        </div>
+                        <a href="/api/library/file/${encodeURIComponent(file.name)}" 
+                           class="btn btn-download" 
+                           download="${file.name}">
+                            ⬇️ Download
+                        </a>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading anime files:', error);
+                document.getElementById('episode-list').innerHTML = 
+                    '<div class="error">Failed to load episodes</div>';
+            }
+        }
+        
+        loadAnimeFiles();
+    </script>
+</body>
+</html>

@@ -1,212 +1,211 @@
-# 🎬 AnimeKai Episode Downloader & Merger
+# 🎬 AnimeKai Downloader
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Cinichi/Ani-Downloader/blob/main/anime_downloader.ipynb)
+A powerful web-based anime downloader with a clean Flask interface for downloading anime episodes from anikai.to. Features automatic search, episode management, and a built-in library to organize your downloads.
 
-☁️ **Click the badge above to open this project directly in Google Colab (no setup required!)**
+> **Note**: This project is based on [Cinichi/Ani-Downloader](https://github.com/Cinichi/Ani-Downloader) with enhancements and a web interface.
 
-A **feature‑rich Python toolkit** for downloading anime episodes from AnimeKai, supporting **multiple download engines**, **parallel chunking**, **episode merging**, and **optional uploads** to GoFile or Google Drive. Designed primarily for **Google Colab**, but adaptable to local Linux environments.
-
-> ⚠️ **Disclaimer**: This project is for **educational and personal archival purposes** only. Always respect copyright laws and the terms of service of the websites you access.
-
----
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.11-blue.svg)
+![Flask](https://img.shields.io/badge/flask-3.0.0-green.svg)
 
 ## ✨ Features
 
-### 📥 Download Capabilities
+- 🔍 **Smart Search**: Search and browse anime titles from anikai.to
+- 📥 **Batch Downloads**: Download single episodes or entire series
+- 📚 **Library Management**: Organize and manage your anime collection
+- 🎨 **Modern Web UI**: Clean, responsive interface with real-time download progress
+- 🔐 **Authentication**: Secure login system (default: admin/admin)
+- 🐳 **Docker Support**: Easy deployment with Docker and Docker Compose
+- ⚡ **Multi-threaded**: Fast concurrent downloads with configurable workers
+- 🎞️ **Quality Control**: Automatic video processing with ffmpeg integration
 
-* Download **single episodes**, **episode ranges**, or **entire seasons**
-* Supports multiple download engines:
+## 🚀 Quick Start
 
-  * `yt-dlp` (recommended)
-  * `aria2`
-  * Parallel **HTTP chunk downloading**
-  * `ffmpeg` (for `.m3u8` streams)
-* Automatic retry & timeout handling
-* Custom User‑Agent and headers
+### Prerequisites
 
-### 🎥 Video & Episode Handling
+- Python 3.11 or higher
+- ffmpeg
+- yt-dlp
 
-* Auto‑detect anime title and season
-* Supports **Soft Sub**, **Hard Sub**, and **Dub** servers
-* Smart server fallback logic
-* Clean, filesystem‑safe filenames
+### Installation
 
-### 🔗 Episode Merging
-
-* Merge multiple episodes into **one continuous MP4**
-* Fast merge (stream copy, no re‑encode)
-* Optional re‑encoding (HQ or compressed)
-* Automatic naming:
-
-  ```
-  Anime Title Season 01 Episodes 01-12.mp4
-  ```
-
-### 📦 ZIP Workflow (Optional)
-
-* Download ZIP files containing episodes
-* Auto‑extract and detect episode order
-* Natural sorting using episode patterns (`S01E01`, `1x01`, `Episode 1`, etc.)
-
-### ☁️ Upload Options
-
-* Upload merged or individual files to:
-
-  * **GoFile.io**
-  * **Google Drive** (Colab only)
-* Optional ZIP creation before upload
-
----
-
-## 🧰 Requirements
-
-### Runtime
-
-* Python **3.9+**
-* Linux (Ubuntu recommended)
-* Google Colab (best supported)
-
-### System Packages
+#### Method 1: Docker (Recommended)
 
 ```bash
-sudo apt install ffmpeg aria2
+# Clone the repository
+git clone <repository-url>
+cd Ani-Downloader
+
+# Start with Docker Compose
+docker-compose up -d
+
+# Access the application
+# Open http://localhost:5000 in your browser
 ```
 
-### Python Packages
+#### Method 2: Local Installation
 
 ```bash
-pip install requests beautifulsoup4 cloudscraper m3u8 pycryptodome tqdm yt-dlp natsort
+# Clone the repository
+git clone <repository-url>
+cd Ani-Downloader
+
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Install system dependencies
+# Ubuntu/Debian:
+sudo apt-get update
+sudo apt-get install -y ffmpeg
+
+# Install yt-dlp
+curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
+chmod a+rx /usr/local/bin/yt-dlp
+
+# Run the application
+python run.py
+
+# Or use the app directly
+python app.py
 ```
 
----
+The application will be available at `http://localhost:5000`
 
-## 🚀 Usage
+**Default Login Credentials:**
+- Username: `admin`
+- Password: `admin`
 
-This project can be used **both interactively (Colab)** and as a **CLI tool on local Linux systems**.
+## 📖 Usage
 
----
+### Web Interface
 
-## 🖥️ CLI Usage (Local Linux)
+1. **Login**: Access the application and log in with your credentials
+2. **Search**: Use the search bar to find anime titles
+3. **Browse**: View anime details, episodes, and available quality options
+4. **Download**: Select episodes or entire series to download
+5. **Library**: View and manage your downloaded anime collection
 
-### 1️⃣ AnimeKai Direct Download Mode
+### Environment Variables
 
-1. Open the notebook in **Google Colab**
-2. Fill in the **Configuration Form**:
+Customize the application with these environment variables:
 
-   * Anime URL
-   * Episode selection mode
-   * Quality & server preferences
-   * Download engine
-3. Run all cells
-4. (Optional) Merge episodes and upload
-
-Supported modes:
-
-* All Episodes
-* Episode Range
-* Single Episode
-
----
-
-### 2️⃣ ZIP → Merge → Upload Mode
-
-Use this mode when you already have a ZIP file containing episodes.
-
-Steps:
-
-1. Provide a **Direct Download Link (DDL)** to the ZIP
-2. Extract videos automatically
-3. Detect episode order
-4. Merge into a single MP4
-5. Upload or keep locally
-
----
-
-## ⚙️ Configuration Highlights
-
-```python
-video_quality = "1080p"
-download_method = "yt-dlp"
-merge_episodes = True
-keep_individual_files = False
-upload_destination = "GoFile.io Only"
+```bash
+ANIME_USER=admin           # Change default username
+ANIME_PASS=admin          # Change default password
+SECRET_KEY=your-secret-key # Flask secret key for sessions
+DOWNLOAD_FOLDER=downloads  # Download directory path
 ```
 
-You can fine‑tune:
+### Docker Configuration
 
-* Chunk size
-* Parallel workers
-* Retry count
-* Connection timeout
-
----
-
-## 📂 Output Structure
-
-```text
-downloads/
-└── Anime Title/
-    ├── Episode_001.mp4
-    ├── Episode_002.mp4
-    └── Anime Title Season 01 Episodes 01-02.mp4
+```bash
+# Using environment variables with Docker
+docker run -d \
+  -p 5000:5000 \
+  -v $(pwd)/downloads:/app/downloads \
+  -e ANIME_USER=myusername \
+  -e ANIME_PASS=mypassword \
+  animekai-downloader
 ```
 
+## 🏗️ Project Structure
+
+```
+Ani-Downloader/
+├── app.py                  # Main Flask application
+├── run.py                  # Application entry point
+├── requirements.txt        # Python dependencies
+├── Dockerfile             # Docker configuration
+├── docker-compose.yml     # Docker Compose setup
+├── setup.sh               # Setup script
+├── app/                   # Application package
+│   ├── __init__.py
+│   ├── downloader.py      # Core download logic
+│   ├── models.py          # Data models
+│   ├── search.py          # Search functionality
+│   ├── utils.py           # Utility functions
+│   └── routes/            # API routes
+│       ├── auth.py        # Authentication
+│       ├── download.py    # Download endpoints
+│       ├── library.py     # Library management
+│       ├── pages.py       # Page rendering
+│       └── search.py      # Search endpoints
+├── static/                # Static assets
+│   ├── dashboard.js       # Dashboard JS
+│   ├── library.js         # Library JS
+│   └── style.css          # Styles
+├── templates/             # HTML templates
+│   ├── anime_detail.html
+│   ├── dashboard.html
+│   ├── download.html
+│   ├── library.html
+│   ├── login.html
+│   ├── nav.html
+│   └── search.html
+└── downloads/             # Downloaded anime storage
+```
+
+## 🔧 Configuration
+
+The downloader supports multiple configuration options:
+
+- **Download Method**: Uses yt-dlp for reliable downloads
+- **Max Retries**: 7 attempts per download (configurable)
+- **Concurrent Workers**: Up to 15 parallel downloads
+- **Timeout**: 300 seconds default
+- **Max File Size**: 16GB limit
+
+## 📦 Dependencies
+
+- **Flask** 3.0.0 - Web framework
+- **requests** 2.31.0 - HTTP library
+- **beautifulsoup4** 4.12.2 - HTML parsing
+- **cloudscraper** 1.2.71 - Cloudflare bypass
+- **tqdm** 4.66.1 - Progress bars
+- **yt-dlp** 2023.12.30 - Video downloader
+- **ffmpeg** - Video processing
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Downloads failing:**
+- Ensure ffmpeg is installed and accessible
+- Verify yt-dlp is up to date
+- Check internet connection and firewall settings
+
+**Port already in use:**
+```bash
+# Change the port in docker-compose.yml or run.py
+# Docker: Change "5000:5000" to "8080:5000"
+# Local: Modify port in app.run() call
+```
+
+**Permission errors:**
+```bash
+# Ensure downloads directory is writable
+chmod -R 755 downloads/
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is provided as-is for educational purposes. Please respect copyright laws and only download content you have the right to access.
+
+## ⚠️ Disclaimer
+
+This tool is for personal use only. Users are responsible for complying with their local laws and the terms of service of the content providers. The developers assume no liability for misuse of this software.
+
+## 🙏 Acknowledgments
+
+- Original project by [@Cinichi](https://github.com/Cinichi) - [Ani-Downloader](https://github.com/Cinichi/Ani-Downloader)
+- Built with Flask and Python
+- Uses yt-dlp for reliable video downloads
+- Powered by anikai.to anime streaming service
+
 ---
 
-## 🧠 Episode Detection Logic
-
-Recognized patterns include:
-
-* `S01E01`, `S1E1`
-* `1x01`
-* `Episode 12`
-* `Season 2 Episode 3`
-* Numeric filenames
-
-Fallback ordering uses natural filename sorting.
-
----
-
-## 🛠️ Troubleshooting
-
-**Download fails?**
-
-* Try switching download method (`yt-dlp` ↔ `ffmpeg`)
-* Increase timeout or retries
-
-**Merge fails?**
-
-* Ensure all files share the same codec
-* Use re‑encode merge mode
-
-**GoFile upload fails?**
-
-* Large files may timeout
-* Use Google Drive instead
-
----
-
-## 📜 License
-
-MIT License
-
----
-
-## 🙌 Credits
-
-* `yt-dlp`
-* `aria2`
-* `ffmpeg`
-* `cloudscraper`
-* `BeautifulSoup`
-
----
-
-## ⭐ Notes
-
-* Designed for **power users** and automation
-* Ideal for batch workflows
-* Easily extensible
-
-If this project helped you, consider starring the repository ⭐
-
+Made with ❤️ for anime enthusiasts

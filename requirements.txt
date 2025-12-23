@@ -1,0 +1,6 @@
+flask==3.0.0
+requests==2.31.0
+beautifulsoup4==4.12.2
+cloudscraper==1.2.71
+tqdm==4.66.1
+yt-dlp==2023.12.30
