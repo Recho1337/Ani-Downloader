@@ -108,6 +108,74 @@ docker run -d \
   animekai-downloader
 ```
 
+### 🔒 Advanced: VPN Integration + Jellyfin
+
+For enhanced privacy and automatic media library integration, you can run the downloader behind a VPN using Gluetun and automatically serve downloads through Jellyfin.
+
+**Benefits:**
+- All download traffic routes through your VPN provider
+- Downloads automatically appear in Jellyfin
+- Single shared network stack between services
+- Automatic media organization
+
+**Setup:**
+
+1. Create a custom `docker-compose.yml` with three services:
+
+```yaml
+services:
+  anime-downloader:
+    image: recho1235/animekai-downloader:latest
+    container_name: animekai-downloader
+    network_mode: "container:gluetun"  # Routes through VPN
+    volumes:
+      - /path/to/your/downloads:/app/downloads
+    environment:
+      - FLASK_ENV=production
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    depends_on:
+      - gluetun
+
+  gluetun:
+    image: qmcgaw/gluetun
+    container_name: gluetun
+    ports:
+      - 5000:5000  # AnimeKai Downloader port
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - VPN_SERVICE_PROVIDER=your_provider  # e.g., protonvpn, nordvpn
+      - VPN_TYPE=wireguard  # or openvpn
+      - WIREGUARD_PRIVATE_KEY=your_private_key
+      - SERVER_COUNTRIES=your_country  # e.g., Netherlands, US
+    restart: unless-stopped
+
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Your/Timezone
+    volumes:
+      - /path/to/jellyfin/config:/config
+      - /path/to/your/downloads:/data/tvshows  # Same path as downloader
+    ports:
+      - 8096:8096  # Jellyfin web UI
+    restart: unless-stopped
+```
+
+2. Configure your VPN credentials with Gluetun ([see docs](https://github.com/qdm12/gluetun))
+3. Start the stack: `docker-compose up -d`
+4. Access AnimeKai at `http://localhost:5000`
+5. Access Jellyfin at `http://localhost:8096`
+6. In Jellyfin, add `/data/tvshows` as a library folder
+
+Downloads will automatically appear in your Jellyfin library while keeping all traffic private through your VPN!
+
 ## 🏗️ Project Structure
 
 ```
