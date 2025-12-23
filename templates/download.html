@@ -605,7 +605,6 @@
                         <strong>📦 Merged File:</strong>
                         <div class="file-item">
                             <span class="file-name">${job.merged_file}</span>
-                            <a href="/api/download/file/${encodeURIComponent(job.merged_file)}" class="btn-download">⬇️ Download</a>
                         </div>
                     </div>
                 `;
@@ -616,7 +615,6 @@
                         ${job.downloaded_files.map(file => `
                             <div class="file-item">
                                 <span class="file-name">${file}</span>
-                                <a href="/api/download/file/${encodeURIComponent(file)}" class="btn-download">⬇️ Download</a>
                             </div>
                         `).join('')}
                     </div>
