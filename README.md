@@ -64,9 +64,6 @@ chmod a+rx /usr/local/bin/yt-dlp
 
 # Run the application
 python run.py
-
-# Or use the app directly
-python app.py
 ```
 
 The application will be available at `http://localhost:5000`
@@ -180,14 +177,13 @@ Downloads will automatically appear in your Jellyfin library while keeping all t
 
 ```
 Ani-Downloader/
-├── app.py                  # Main Flask application
 ├── run.py                  # Application entry point
 ├── requirements.txt        # Python dependencies
 ├── Dockerfile             # Docker configuration
 ├── docker-compose.yml     # Docker Compose setup
 ├── setup.sh               # Setup script
 ├── app/                   # Application package
-│   ├── __init__.py
+│   ├── __init__.py        # Flask app factory
 │   ├── downloader.py      # Core download logic
 │   ├── models.py          # Data models
 │   ├── search.py          # Search functionality
@@ -200,7 +196,6 @@ Ani-Downloader/
 │       └── search.py      # Search endpoints
 ├── static/                # Static assets
 │   ├── dashboard.js       # Dashboard JS
-│   ├── library.js         # Library JS
 │   └── style.css          # Styles
 ├── templates/             # HTML templates
 │   ├── anime_detail.html
