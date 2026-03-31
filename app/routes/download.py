@@ -86,8 +86,15 @@ def run_download_job(job: DownloadJob, download_folder):
         job.add_log("INFO", f"Will download {job.total_episodes} episode(s)")
 
         # Create download directory
-        download_dir = os.path.join(download_folder, anime_title)
-        os.makedirs(download_dir, exist_ok=True)
+        anime_dir = os.path.join(
+            download_folder,
+            downloader.generate_anime_folder_name(anime_title),
+        )
+        season_dir = os.path.join(
+            anime_dir,
+            downloader.generate_season_folder_name(job.season),
+        )
+        os.makedirs(season_dir, exist_ok=True)
 
         # Download episodes
         job.status = "downloading"
@@ -121,15 +128,20 @@ def run_download_job(job: DownloadJob, download_folder):
                 continue
 
             # Generate filename
-            filename = downloader.generate_episode_filename(anime_title, job.season, ep_id)
-            filepath = os.path.join(download_dir, filename)
+            filename = downloader.generate_episode_filename(
+                anime_title,
+                job.season,
+                ep_id,
+                ep.get("title", ""),
+            )
+            filepath = os.path.join(season_dir, filename)
 
             # Download episode
             if downloader.download_episode(video_data, filepath, ep_id):
                 downloaded_files.append(filepath)
                 job.completed_episodes += 1
                 job.progress = int((job.completed_episodes / job.total_episodes) * 100)
-                job.downloaded_files.append(os.path.basename(filepath))
+                job.downloaded_files.append(os.path.relpath(filepath, download_folder))
                 job.add_log("INFO", f"✅ Successfully downloaded episode {ep_id}")
             else:
                 job.add_log("ERROR", f"❌ Failed to download episode {ep_id}")
@@ -152,7 +164,7 @@ def run_download_job(job: DownloadJob, download_folder):
             )
 
             if merged_file:
-                job.merged_file = os.path.basename(merged_file)
+                job.merged_file = os.path.relpath(merged_file, download_folder)
                 job.add_log("INFO", f"✅ Successfully merged into {job.merged_file}")
                 
                 # Remove individual files if requested
@@ -161,9 +173,9 @@ def run_download_job(job: DownloadJob, download_folder):
                     for f in downloaded_files:
                         try:
                             os.remove(f)
-                            job.downloaded_files.remove(os.path.basename(f))
+                            job.downloaded_files.remove(os.path.relpath(f, download_folder))
                         except Exception as e:
-                            job.add_log("WARN", f"Could not remove {os.path.basename(f)}: {e}")
+                            job.add_log("WARN", f"Could not remove {os.path.relpath(f, download_folder)}: {e}")
             else:
                 job.add_log("ERROR", "❌ Merge failed")
 

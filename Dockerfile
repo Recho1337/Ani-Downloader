@@ -20,11 +20,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application files
-COPY app.py .
 COPY run.py .
-COPY utils.py .
 COPY app/ app/
-COPY routes/ routes/
 COPY static/ static/
 COPY templates/ templates/
 
@@ -35,7 +32,7 @@ RUN mkdir -p downloads
 EXPOSE 5000
 
 # Set environment variables
-ENV FLASK_APP=app.py
+ENV FLASK_APP=app:create_app
 ENV PYTHONUNBUFFERED=1
 
 # Run the application

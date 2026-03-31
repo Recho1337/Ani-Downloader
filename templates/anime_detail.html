@@ -24,6 +24,10 @@
 
     <script>
         const animeName = "{{ anime_name }}";
+
+        function buildFileUrl(relativePath) {
+            return `/api/library/file/${relativePath.split('/').map(encodeURIComponent).join('/')}`;
+        }
         
         async function loadAnimeFiles() {
             try {
@@ -46,13 +50,14 @@
                         <div class="episode-info">
                             <div class="episode-name">${file.name}</div>
                             <div class="episode-meta">
+                                ${file.season_folder ? `${file.season_folder} • ` : ''}
                                 ${file.size_gb >= 1 ? 
                                     `${file.size_gb.toFixed(2)} GB` : 
                                     `${file.size_mb.toFixed(2)} MB`
                                 } • Modified: ${new Date(file.modified).toLocaleString()}
                             </div>
                         </div>
-                        <a href="/api/library/file/${encodeURIComponent(file.name)}" 
+                        <a href="${buildFileUrl(file.relative_path)}" 
                            class="btn btn-download" 
                            download="${file.name}">
                             ⬇️ Download

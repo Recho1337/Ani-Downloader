@@ -143,6 +143,58 @@ class AnimeDownloader:
                 return int(m.group(1))
         return 1
 
+    def sanitize_media_name(self, value: str, fallback: str) -> str:
+        """Sanitize folder and file name components for local storage."""
+        cleaned = re.sub(r'[<>:"/\\|?*]', "", (value or "").strip())
+        cleaned = re.sub(r"\s+", " ", cleaned).strip(" .")
+        return cleaned or fallback
+
+    def format_season_number(self, season_num: int) -> str:
+        """Format a season number using two digits."""
+        return f"{season_num:02d}"
+
+    def format_episode_number(self, ep_id: str) -> str:
+        """Format an episode identifier using a two-digit main number."""
+        match = re.match(r"(\d+)(?:\.(\d+))?$", ep_id.strip())
+        if match:
+            main = int(match.group(1))
+            decimal = match.group(2)
+            if decimal:
+                return f"{main:02d}.{decimal}"
+            return f"{main:02d}"
+        return ep_id.strip()
+
+    def clean_episode_title(self, ep_id: str, raw_title: str) -> str:
+        """Normalize an episode title and fall back to a generic label when needed."""
+        formatted_ep = self.format_episode_number(ep_id)
+        title = re.sub(r"\s+", " ", (raw_title or "").strip())
+        generic_title = f"Episode {formatted_ep}"
+
+        if not title:
+            return generic_title
+
+        removable_prefixes = [
+            rf"^(?:ep|eps|episode)\.?\s*{re.escape(ep_id)}\s*[-:]*\s*",
+            rf"^(?:ep|eps|episode)\.?\s*{re.escape(formatted_ep)}\s*[-:]*\s*",
+            rf"^{re.escape(ep_id)}\s*[-:]*\s*",
+            rf"^{re.escape(formatted_ep)}\s*[-:]*\s*",
+        ]
+        for pattern in removable_prefixes:
+            title = re.sub(pattern, "", title, flags=re.IGNORECASE)
+
+        title = title.strip(" -:")
+        if not title or not re.search(r"[A-Za-z]", title):
+            return generic_title
+        return title
+
+    def generate_anime_folder_name(self, anime_title: str) -> str:
+        """Generate the top-level series folder name."""
+        return self.sanitize_media_name(anime_title, "Unknown Anime")
+
+    def generate_season_folder_name(self, season_num: int) -> str:
+        """Generate a Jellyfin/Plex-friendly season folder name."""
+        return f"Season {self.format_season_number(season_num)}"
+
     def safe_episode_key(self, ep_id: str) -> Tuple[int, float]:
         """Convert episode ID to sortable key"""
         m = re.match(r"(\d+)(?:\.(\d+))?", ep_id)
@@ -171,6 +223,13 @@ class AnimeDownloader:
             for ep in soup.select("div.eplist a"):
                 token = ep.get("token", "")
                 ep_id = ep.get("num", "").strip()
+                raw_title = (
+                    ep.get("title")
+                    or ep.get("data-title")
+                    or ep.get("data-name")
+                    or ep.get("data-ep-title")
+                    or " ".join(ep.stripped_strings)
+                )
                 langs = ep.get("langs", "0")
                 try:
                     langs_int = int(langs)
@@ -188,7 +247,7 @@ class AnimeDownloader:
                     "sort_key": self.safe_episode_key(ep_id),
                     "token": token,
                     "subdub": subdub,
-                    "title": f"Episode {ep_id}",
+                    "title": self.clean_episode_title(ep_id, raw_title),
                 })
             episodes.sort(key=lambda e: e["sort_key"])
             return episodes
@@ -315,20 +374,30 @@ class AnimeDownloader:
             self.log("ERROR", f"Error getting video data: {e}")
             return None
 
-    def generate_episode_filename(self, anime_title: str, season_num: int, ep_id: str) -> str:
-        """Generate proper episode filename"""
-        try:
-            ep_num = float(ep_id)
-            if ep_num == int(ep_num):
-                ep_formatted = f"{int(ep_num):02d}"
-            else:
-                ep_formatted = ep_id
-        except ValueError:
-            ep_formatted = ep_id
+    def generate_episode_filename(self, anime_title: str, season_num: int, ep_id: str, episode_title: str) -> str:
+        """Generate a Jellyfin/Plex-friendly episode filename."""
+        series_name = self.generate_anime_folder_name(anime_title)
+        season_code = self.format_season_number(season_num)
+        episode_code = self.format_episode_number(ep_id)
+        safe_episode_title = self.sanitize_media_name(
+            self.clean_episode_title(ep_id, episode_title),
+            f"Episode {episode_code}",
+        )
+        return f"{series_name} - S{season_code}E{episode_code} - {safe_episode_title}.mp4"
 
-        filename = f"{anime_title} Season {season_num:02d} Episode {ep_formatted}.mp4"
-        filename = re.sub(r'[<>:"/\\|?*]', "", filename)
-        return filename
+    def generate_merged_filename(
+        self,
+        anime_title: str,
+        season_num: int,
+        first_ep_id: str,
+        last_ep_id: str
+    ) -> str:
+        """Generate a filesystem-safe multi-episode filename."""
+        series_name = self.generate_anime_folder_name(anime_title)
+        season_code = self.format_season_number(season_num)
+        first_code = self.format_episode_number(first_ep_id)
+        last_code = self.format_episode_number(last_ep_id)
+        return f"{series_name} - S{season_code}E{first_code}-E{last_code} - Episodes {first_code}-{last_code}.mp4"
 
     def download_with_ytdlp(self, url: str, output_file: str, episode_label: str, subtitles: List[Dict] = None) -> bool:
         """Download with yt-dlp, optionally embedding subtitles"""
@@ -452,8 +521,12 @@ class AnimeDownloader:
             self.log("ERROR", "Some input files for merging are missing")
             return None
 
-        merged_filename = f"{anime_title} Season {season_num:02d} Episodes {first_ep_id}-{last_ep_id}.mp4"
-        merged_filename = re.sub(r'[<>:"/\\|?*]', "", merged_filename)
+        merged_filename = self.generate_merged_filename(
+            anime_title,
+            season_num,
+            first_ep_id,
+            last_ep_id,
+        )
         merged_path = os.path.join(os.path.dirname(file_list[0]), merged_filename)
 
         self.log("INFO", f"Merging {len(valid_files)} files into {merged_filename}")
